@@ -9,11 +9,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class SecurityProperties {
 
     private String secret;
-    private long expirationMs = 3600000;
+    private long accessTokenExpirationMs = 3600000;      // 1 hour
+    private long refreshTokenExpirationMs = 604800000;   // 7 days
     private String authHeader = "Authorization";
     private String cookieName = "ACCESS_TOKEN";
 
-    @PostConstruct
+
+@PostConstruct
     void validate() {
         if (secret == null || secret.length() < 32) {
             throw new IllegalStateException(

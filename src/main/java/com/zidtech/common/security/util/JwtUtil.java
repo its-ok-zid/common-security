@@ -1,18 +1,17 @@
 package com.zidtech.common.security.util;
 
 import com.zidtech.common.security.config.SecurityProperties;
+import com.zidtech.common.security.model.JwtTokenPair;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
-@Component
 @RequiredArgsConstructor
 public class JwtUtil {
 
@@ -26,12 +25,19 @@ public class JwtUtil {
         );
     }
 
-    public String generateToken(String username) {
+    public JwtTokenPair generateTokenPair(String username, String refreshToken) {
+        return new JwtTokenPair(
+                generateAccessToken(username),
+                refreshToken
+        );
+    }
+
+    public String generateAccessToken(String username) {
         Date now = new Date();
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + props.getExpirationMs()))
+                .setExpiration(new Date(now.getTime() + props.getAccessTokenExpirationMs()))
                 .signWith(key)
                 .compact();
     }
