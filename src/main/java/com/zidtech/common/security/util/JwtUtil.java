@@ -21,7 +21,9 @@ public class JwtUtil {
 
     @PostConstruct
     void init() {
-        this.key = Keys.hmacShaKeyFor(props.getSecret().getBytes(StandardCharsets.UTF_8));
+        this.key = Keys.hmacShaKeyFor(
+                props.getSecret().getBytes(StandardCharsets.UTF_8)
+        );
     }
 
     public String generateToken(String username) {

@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 
-
 @Getter
 @Builder
 public class SecurityUser implements UserDetails {
