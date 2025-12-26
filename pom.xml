@@ -15,7 +15,7 @@
 
     <groupId>com.zidtech.security</groupId>
     <artifactId>common-security</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.0</version>
 
     <name>common-security</name>
     <description>Common Spring Security JWT library</description>
@@ -79,6 +79,14 @@
         </dependency>
 
     </dependencies>
+
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>common-security</name>
+            <url>https://maven.pkg.github.com/its-ok-zid/common-security</url>
+        </repository>
+    </distributionManagement>
 
     <build>
         <plugins>
