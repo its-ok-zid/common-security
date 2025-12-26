@@ -81,5 +81,5 @@ These responsibilities belong to **individual microservices**.
 <dependency>
     <groupId>com.cts.security</groupId>
     <artifactId>security-common</artifactId>
-    <version>1.0.0</version>
+    <version>{LATEST_VERSION}</version>
 </dependency>
