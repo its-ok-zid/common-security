@@ -1,27 +1,45 @@
 package com.zidtech.common.security.config;
 
 import com.zidtech.common.security.filter.JwtAuthenticationFilter;
-import com.zidtech.common.security.service.SecurityUserService;
-import com.zidtech.common.security.util.JwtUtil;
+import com.zidtech.common.security.service.SecurityPolicyCustomizer;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @AutoConfiguration
-@EnableConfigurationProperties(SecurityProperties.class)
 public class SecurityAutoConfiguration {
 
     @Bean
-    public JwtUtil jwtUtil(SecurityProperties properties) {
-        return new JwtUtil(properties);
+    public PasswordEncoder passwordEncoder() {
+        return new BCryptPasswordEncoder();
     }
 
     @Bean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(
-            JwtUtil jwtUtil,
-            SecurityUserService userService,
-            SecurityProperties properties
-    ) {
-        return new JwtAuthenticationFilter(jwtUtil, userService, properties);
+    SecurityFilterChain filterChain(
+            HttpSecurity http,
+            JwtAuthenticationFilter jwtFilter,
+            ObjectProvider<SecurityPolicyCustomizer> policyCustomizer
+    ) throws Exception {
+
+        http
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(sm ->
+                        sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                );
+
+        policyCustomizer.ifAvailable(p -> {
+            try { p.customize(http); }
+            catch (Exception e) { throw new RuntimeException(e); }
+        });
+
+        http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
     }
 }

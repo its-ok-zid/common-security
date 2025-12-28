@@ -6,11 +6,11 @@ import java.util.Optional;
 
 public interface RefreshTokenService {
 
-    RefreshToken create(String username);
+    RefreshToken issue(String username);
 
-    Optional<RefreshToken> find(String token);
+    Optional<RefreshToken> validate(String token);
 
-    void invalidate(String token);
+    void rotate(String token);
 
     void invalidateAll(String username);
 }

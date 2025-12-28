@@ -9,11 +9,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class SecurityProperties {
 
     private String secret;
-    private long accessTokenExpirationMs = 3600000;      // 1 hour
-    private long refreshTokenExpirationMs = 604800000;   // 7 days
-    private String authHeader = "Authorization";
-    private String cookieName = "ACCESS_TOKEN";
-
+    private long expirationMs = 3600000;
+    private String accessCookie = "ACCESS_TOKEN";
+    private String refreshCookie = "REFRESH_TOKEN";
 
 @PostConstruct
     void validate() {
