@@ -10,10 +10,12 @@ public final class CookieUtil {
     public static void add(HttpServletResponse res, String name, String value, int maxAge) {
         Cookie c = new Cookie(name, value);
         c.setHttpOnly(true);
+        c.setSecure(true);        // 🔒 HTTPS only
         c.setPath("/");
         c.setMaxAge(maxAge);
         res.addCookie(c);
     }
+
 
     public static void clear(HttpServletResponse res, String name) {
         Cookie c = new Cookie(name, null);

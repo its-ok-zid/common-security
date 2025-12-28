@@ -23,23 +23,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     protected void doFilterInternal(
             HttpServletRequest req,
             HttpServletResponse res,
-            FilterChain chain) {
-
+            FilterChain chain
+    ) {
         try {
-            if (req.getCookies() != null) {
+            if (SecurityContextHolder.getContext().getAuthentication() == null
+                    && req.getCookies() != null) {
+
                 for (Cookie c : req.getCookies()) {
                     if (props.getAccessCookie().equals(c.getName())) {
-                        String username = jwtUtil.extractUsername(c.getValue());
-                        var user = userService.loadByUsername(username);
-                        SecurityContextHolder.getContext().setAuthentication(
-                                new UsernamePasswordAuthenticationToken(
-                                        user, null, user.getAuthorities()));
+
+                        String token = c.getValue();
+
+                        if (jwtUtil.isValid(token)) {
+                            String username = jwtUtil.extractUsername(token);
+                            var user = userService.loadByUsername(username);
+
+                            SecurityContextHolder.getContext().setAuthentication(
+                                    new UsernamePasswordAuthenticationToken(
+                                            user, null, user.getAuthorities()
+                                    )
+                            );
+                        }
+                        break;
                     }
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+            // Security must NEVER crash the request chain
+        }
 
-        try { chain.doFilter(req, res); }
-        catch (Exception e) { throw new RuntimeException(e); }
+        try {
+            chain.doFilter(req, res);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
