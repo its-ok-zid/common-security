@@ -10,7 +10,8 @@ public interface RefreshTokenService {
 
     Optional<RefreshToken> validate(String token);
 
-    void rotate(String token);
+    RefreshToken rotate(String token);
 
     void invalidateAll(String username);
 }
+

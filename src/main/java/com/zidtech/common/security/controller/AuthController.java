@@ -72,18 +72,12 @@ public class AuthController {
             @CookieValue("REFRESH_TOKEN") String refreshToken,
             HttpServletResponse response) {
 
-        RefreshToken stored = refreshTokenService.validate(refreshToken)
-                .orElseThrow(() -> new BadCredentialsException("Invalid refresh token"));
+        RefreshToken rotated = refreshTokenService.rotate(refreshToken);
 
-        if (stored.getExpiry().isBefore(Instant.now())) {
-            refreshTokenService.rotate(refreshToken);
-            throw new BadCredentialsException("Refresh token expired");
-        }
-
-        refreshTokenService.rotate(refreshToken);
-
-        RefreshToken newToken = refreshTokenService.issue(stored.getUsername());
-        TokenPair pair = jwtUtil.generate(stored.getUsername(), newToken.getToken());
+        TokenPair pair = jwtUtil.generate(
+                rotated.getUsername(),
+                rotated.getToken()
+        );
 
         CookieUtil.add(response, "ACCESS_TOKEN", pair.getAccessToken(), 3600);
         CookieUtil.add(response, "REFRESH_TOKEN", pair.getRefreshToken(), 7 * 24 * 3600);

@@ -1,5 +1,6 @@
 package com.zidtech.common.security.filter;
 
+import com.zidtech.common.security.config.SecurityProperties;
 import com.zidtech.common.security.service.SecurityUserService;
 import com.zidtech.common.security.util.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -16,6 +17,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final SecurityUserService userService;
+    private final SecurityProperties props;
 
     @Override
     protected void doFilterInternal(
@@ -24,27 +26,20 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             FilterChain chain) {
 
         try {
-            String token = extract(req);
-            if (token != null) {
-                String username = jwtUtil.extractUsername(token);
-                var user = userService.loadByUsername(username);
-                SecurityContextHolder.getContext().setAuthentication(
-                        new UsernamePasswordAuthenticationToken(
-                                user, null, user.getAuthorities()));
+            if (req.getCookies() != null) {
+                for (Cookie c : req.getCookies()) {
+                    if (props.getAccessCookie().equals(c.getName())) {
+                        String username = jwtUtil.extractUsername(c.getValue());
+                        var user = userService.loadByUsername(username);
+                        SecurityContextHolder.getContext().setAuthentication(
+                                new UsernamePasswordAuthenticationToken(
+                                        user, null, user.getAuthorities()));
+                    }
+                }
             }
         } catch (Exception ignored) {}
 
         try { chain.doFilter(req, res); }
         catch (Exception e) { throw new RuntimeException(e); }
-    }
-
-    private String extract(HttpServletRequest req) {
-        if (req.getCookies() == null) return null;
-        for (Cookie c : req.getCookies()) {
-            if ("ACCESS_TOKEN".equals(c.getName())) {
-                return c.getValue();
-            }
-        }
-        return null;
     }
 }
