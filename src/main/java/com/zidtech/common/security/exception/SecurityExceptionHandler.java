@@ -1,5 +1,8 @@
 package com.zidtech.common.security.exception;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -9,6 +12,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import java.util.Map;
 
 @RestControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE)
+@ConditionalOnProperty(prefix = "security.common", name = "global-exception-handler-enabled", havingValue = "true")
 public class SecurityExceptionHandler {
 
     @ExceptionHandler(BadCredentialsException.class)

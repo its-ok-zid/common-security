@@ -1,85 +1,84 @@
-# 🔐 security-common  
-Reusable Spring Security & JWT Library for Microservices
+# 🔐 common-security
+Reusable Spring Security + JWT starter for Spring Boot microservices.
 
----
+## Overview
+`common-security` is a shared security mechanism library. It provides JWT validation, Spring Security context setup, stateless defaults, and secure cookie helpers so each microservice can avoid duplicating core security wiring.
 
-## 📌 Overview
+> This library provides **security mechanism**, while each microservice keeps **security policy**.
 
-`security-common` is a **production-grade Spring Security common library** designed for **Spring Boot microservice architectures**.
-
-It centralizes **authentication and authorization infrastructure** so that individual microservices can focus purely on **business logic**, while security concerns are handled **consistently and correctly** across the platform.
-
-Typical consumers:
-- User / Auth Service
-- Item Service
-- Cart Service
-- Payment Service
-- Order Service
-
----
-
-## 🎯 Objectives
-
-- Eliminate duplicated Spring Security code across services
-- Provide consistent JWT-based authentication
-- Support role-based authorization
-- Enable stateless, scalable security
-- Keep security completely **business-agnostic**
-
----
-
-## 🧠 Architectural Principle
-
-> **This library provides SECURITY MECHANISM, not SECURITY POLICY**
-
-- **Mechanism** → JWT parsing, validation, filters, security context
-- **Policy** → Authorization rules (`@PreAuthorize`, endpoint access) are defined per service
-
----
-
-## ✨ Features
-
-### Authentication
-- Stateless JWT authentication
-- Token extraction from:
+## Features
+- Spring Boot auto-configuration (`SecurityFilterChain`, JWT filter, BCrypt `PasswordEncoder`)
+- JWT validation from both:
   - `Authorization: Bearer <token>` header
-  - HTTP cookies
-- Token validation and expiration handling
+  - access-token cookie (`security.jwt.access-cookie`)
+- Strong property validation for JWT secret and expirations
+- Cookie helper with `HttpOnly`, `Secure`, `SameSite`, and path control
+- Extension points:
+  - `SecurityUserService`
+  - `RefreshTokenService`
+  - `SecurityPolicyCustomizer`
 
-### Authorization
-- Role-based authorization (`ROLE_USER`, `ROLE_ADMIN`)
-- Method-level security support
-- Spring Security context propagation
-
-### Infrastructure
-- Auto-configured `SecurityFilterChain`
-- Custom JWT `OncePerRequestFilter`
-- BCrypt password encoder
-- Spring Boot 3.x compatible
-- Java 21 compatible
-
----
-
-## 🚫 Explicit Non-Goals
-
-This library intentionally **does NOT**:
-- Define `User` entities
-- Access any database
-- Provide auth controllers (`/login`, `/signup`)
-- Persist refresh tokens
-- Enforce business-specific authorization rules
-
-These responsibilities belong to **individual microservices**.
-
----
-
-## 📦 Installation
-
-### Maven Dependency
-
+## Maven dependency
 ```xml
 <dependency>
-    <groupId>com.cts.security</groupId>
-    <artifactId>security-common</artifactId>
-    <version>{LATEST_VERSION}</version>
+    <groupId>com.zidtech.security</groupId>
+    <artifactId>common-security</artifactId>
+    <version>1.0.4</version>
 </dependency>
+```
+
+## Required properties
+```properties
+security.jwt.secret=replace-with-32-plus-char-secret-key
+```
+
+## Optional properties
+```properties
+security.jwt.access-expiration-ms=3600000
+security.jwt.refresh-expiration-ms=604800000
+security.jwt.access-cookie=ACCESS_TOKEN
+security.jwt.refresh-cookie=REFRESH_TOKEN
+security.jwt.cookie-secure=true
+security.jwt.cookie-http-only=true
+security.jwt.cookie-path=/
+security.jwt.cookie-same-site=Strict
+security.jwt.default-authenticated=false
+
+# disabled by default to avoid overriding host app error contracts
+security.common.global-exception-handler-enabled=false
+```
+
+## Consumer integration
+Provide an implementation for `SecurityUserService`:
+
+```java
+@Service
+public class UserPrincipalService implements SecurityUserService {
+    @Override
+    public SecurityUser loadByUsername(String username) {
+        // load user from your service/repo and map authorities
+        return SecurityUser.builder()
+                .id(1L)
+                .username(username)
+                .password("N/A")
+                .authorities(List.of(new SimpleGrantedAuthority("ROLE_USER")))
+                .build();
+    }
+}
+```
+
+### Optional policy customization
+Use `SecurityPolicyCustomizer` to define service-specific authorization rules:
+
+```java
+@Bean
+SecurityPolicyCustomizer securityPolicyCustomizer() {
+    return http -> http.authorizeHttpRequests(auth -> auth
+            .requestMatchers("/actuator/health", "/auth/**").permitAll()
+            .anyRequest().authenticated());
+}
+```
+
+## Notes
+- Refresh token persistence/rotation storage stays service-owned by design.
+- `TokenPair` is deprecated; use `JwtTokenPair`.

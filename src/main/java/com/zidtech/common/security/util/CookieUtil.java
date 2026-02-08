@@ -1,26 +1,45 @@
 package com.zidtech.common.security.util;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseCookie;
 
 public final class CookieUtil {
 
-    private CookieUtil() {}
-
-    public static void add(HttpServletResponse res, String name, String value, int maxAge) {
-        Cookie c = new Cookie(name, value);
-        c.setHttpOnly(true);
-        c.setSecure(true);        // 🔒 HTTPS only
-        c.setPath("/");
-        c.setMaxAge(maxAge);
-        res.addCookie(c);
+    private CookieUtil() {
     }
 
+    public static void add(HttpServletResponse res,
+                           String name,
+                           String value,
+                           long maxAgeSeconds,
+                           boolean secure,
+                           boolean httpOnly,
+                           String path,
+                           String sameSite) {
+        ResponseCookie cookie = ResponseCookie.from(name, value)
+                .httpOnly(httpOnly)
+                .secure(secure)
+                .path(path)
+                .maxAge(maxAgeSeconds)
+                .sameSite(sameSite)
+                .build();
+        res.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+    }
 
-    public static void clear(HttpServletResponse res, String name) {
-        Cookie c = new Cookie(name, null);
-        c.setPath("/");
-        c.setMaxAge(0);
-        res.addCookie(c);
+    public static void clear(HttpServletResponse res,
+                             String name,
+                             boolean secure,
+                             boolean httpOnly,
+                             String path,
+                             String sameSite) {
+        ResponseCookie cookie = ResponseCookie.from(name, "")
+                .httpOnly(httpOnly)
+                .secure(secure)
+                .path(path)
+                .maxAge(0)
+                .sameSite(sameSite)
+                .build();
+        res.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 }

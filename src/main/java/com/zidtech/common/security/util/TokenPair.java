@@ -1,11 +1,14 @@
 package com.zidtech.common.security.util;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import com.zidtech.common.security.model.JwtTokenPair;
 
-@Data
-@AllArgsConstructor
-public class TokenPair {
-    private String accessToken;
-    private String refreshToken;
+/**
+ * @deprecated use {@link JwtTokenPair}
+ */
+@Deprecated(forRemoval = true)
+public class TokenPair extends JwtTokenPair {
+
+    public TokenPair(String accessToken, String refreshToken) {
+        super(accessToken, refreshToken);
+    }
 }
