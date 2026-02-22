@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecard_db
+    username: postgres
+    password: yourpassword
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+zidtech:
+  security:
+    jwt:
+      secret-key: "your-super-secret-key-minimum-32-characters-long!!"
+      access-token-expiry: 900000      # 15 minutes
+      refresh-token-expiry: 604800000  # 7 days
+      access-token-cookie-name: access_token
+      refresh-token-cookie-name: refresh_token
