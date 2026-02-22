@@ -79,7 +79,7 @@ These responsibilities belong to **individual microservices**.
 
 ```xml
 <dependency>
-    <groupId>com.zidtech.security</groupId>
-    <artifactId>security-common</artifactId>
-    <version>{LATEST_VERSION}</version>
+  <groupId>com.zidtech.security</groupId>
+  <artifactId>common-security</artifactId>
+  <version>1.0.5</version>
 </dependency>
