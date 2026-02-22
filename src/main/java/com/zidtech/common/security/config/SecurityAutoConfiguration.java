@@ -1,81 +1,56 @@
 package com.zidtech.common.security.config;
 
-import com.zidtech.common.security.filter.JwtAuthenticationFilter;
-import com.zidtech.common.security.service.InMemoryRefreshTokenService;
+import com.zidtech.common.security.filter.JwtAuthFilter;
+import com.zidtech.common.security.repository.RefreshTokenRepository;
+import com.zidtech.common.security.repository.UserRepository;
+import com.zidtech.common.security.service.CustomUserDetailsService;
 import com.zidtech.common.security.service.RefreshTokenService;
-import com.zidtech.common.security.service.SecurityPolicyCustomizer;
-import com.zidtech.common.security.service.SecurityUserService;
+import com.zidtech.common.security.util.CookieUtil;
 import com.zidtech.common.security.util.JwtUtil;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @AutoConfiguration
-@EnableMethodSecurity
-@EnableConfigurationProperties(SecurityProperties.class)
+@EnableScheduling
+@ComponentScan("com.ecard.security")
+@EnableConfigurationProperties(com.ecard.security.config.JwtProperties.class)
 public class SecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    public JwtUtil jwtUtil(com.ecard.security.config.JwtProperties jwtProperties) {
+        return new JwtUtil(jwtProperties);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public JwtUtil jwtUtil(SecurityProperties props) {
-        return new JwtUtil(props);
+    public CookieUtil cookieUtil(com.ecard.security.config.JwtProperties jwtProperties) {
+        return new CookieUtil(jwtProperties);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public RefreshTokenService refreshTokenService(SecurityProperties props) {
-        return new InMemoryRefreshTokenService(props);
+    public CustomUserDetailsService customUserDetailsService(UserRepository userRepository) {
+        return new CustomUserDetailsService(userRepository);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public JwtAuthenticationFilter jwtAuthenticationFilter(
-            JwtUtil jwtUtil,
-            SecurityUserService userService,
-            SecurityProperties props) {
-        return new JwtAuthenticationFilter(jwtUtil, userService, props);
+    public JwtAuthFilter jwtAuthFilter(JwtUtil jwtUtil,
+                                       CustomUserDetailsService userDetailsService,
+                                       CookieUtil cookieUtil) {
+        return new JwtAuthFilter(jwtUtil, userDetailsService, cookieUtil);
     }
 
-    @Bean(name = "securityFilterChain")
-    @ConditionalOnMissingBean(name = "securityFilterChain")
-    public SecurityFilterChain filterChain(
-            HttpSecurity http,
-            JwtAuthenticationFilter jwtFilter,
-            SecurityProperties props,
-            ObjectProvider<SecurityPolicyCustomizer> customizerProvider) throws Exception {
-
-        http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(s -> s.sessionCreationPolicy(STATELESS))
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
-
-        if (props.isDefaultAuthenticated()) {
-            http.authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
-        } else {
-            http.authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        }
-
-        SecurityPolicyCustomizer customizer = customizerProvider.getIfAvailable();
-        if (customizer != null) {
-            customizer.customize(http);
-        }
-
-        return http.build();
+    @Bean
+    @ConditionalOnMissingBean
+    public RefreshTokenService refreshTokenService(RefreshTokenRepository refreshTokenRepository,
+                                                   UserRepository userRepository,
+                                                   com.ecard.security.config.JwtProperties jwtProperties) {
+        return new RefreshTokenService(refreshTokenRepository, userRepository, jwtProperties);
     }
 }
