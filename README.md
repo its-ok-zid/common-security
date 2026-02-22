@@ -1,4 +1,4 @@
-# 🔐 security-common  
+# 🔐 security-common
 Reusable Spring Security & JWT Library for Microservices
 
 ---

@@ -1,48 +1,56 @@
 package com.zidtech.common.security.config;
 
-import com.zidtech.common.security.filter.JwtAuthenticationFilter;
-import com.zidtech.common.security.service.SecurityUserService;
+import com.zidtech.common.security.filter.JwtAuthFilter;
+import com.zidtech.common.security.repository.RefreshTokenRepository;
+import com.zidtech.common.security.repository.UserRepository;
+import com.zidtech.common.security.service.CustomUserDetailsService;
+import com.zidtech.common.security.service.RefreshTokenService;
+import com.zidtech.common.security.util.CookieUtil;
 import com.zidtech.common.security.util.JwtUtil;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @AutoConfiguration
-@EnableConfigurationProperties(SecurityProperties.class)
+@EnableScheduling
+@ComponentScan("com.ecard.security")
+@EnableConfigurationProperties(JwtProperties.class)
 public class SecurityAutoConfiguration {
 
     @Bean
-    PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+    @ConditionalOnMissingBean
+    public JwtUtil jwtUtil(JwtProperties jwtProperties) {
+        return new JwtUtil(jwtProperties);
     }
 
     @Bean
-    JwtAuthenticationFilter jwtAuthenticationFilter(
-            JwtUtil jwtUtil,
-            SecurityUserService userService,
-            SecurityProperties props) {
-
-        return new JwtAuthenticationFilter(jwtUtil, userService, props);
+    @ConditionalOnMissingBean
+    public CookieUtil cookieUtil(JwtProperties jwtProperties) {
+        return new CookieUtil(jwtProperties);
     }
 
     @Bean
-    SecurityFilterChain filterChain(
-            HttpSecurity http,
-            JwtAuthenticationFilter jwtFilter) throws Exception {
+    @ConditionalOnMissingBean
+    public CustomUserDetailsService customUserDetailsService(UserRepository userRepository) {
+        return new CustomUserDetailsService(userRepository);
+    }
 
-        http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(s -> s.sessionCreationPolicy(STATELESS))
-                .authorizeHttpRequests(auth -> auth.anyRequest().authenticated())
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+    @Bean
+    @ConditionalOnMissingBean
+    public JwtAuthFilter jwtAuthFilter(JwtUtil jwtUtil,
+                                       CustomUserDetailsService userDetailsService,
+                                       CookieUtil cookieUtil) {
+        return new JwtAuthFilter(jwtUtil, userDetailsService, cookieUtil);
+    }
 
-        return http.build();
+    @Bean
+    @ConditionalOnMissingBean
+    public RefreshTokenService refreshTokenService(RefreshTokenRepository refreshTokenRepository,
+                                                   UserRepository userRepository,
+                                                   JwtProperties jwtProperties) {
+        return new RefreshTokenService(refreshTokenRepository, userRepository, jwtProperties);
     }
 }
