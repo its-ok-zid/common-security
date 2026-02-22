@@ -14,7 +14,7 @@ spring:
 zidtech:
   security:
     jwt:
-      secret-key: "your-super-secret-key-minimum-32-characters-long!!"
+      secret-key: "{YOUR_SECRET_KEY}"
       access-token-expiry: 900000      # 15 minutes
       refresh-token-expiry: 604800000  # 7 days
       access-token-cookie-name: access_token

@@ -1,6 +1,7 @@
-package com.ecard.security.config;
+package com.zidtech.common.security.config;
 
 import lombok.Data;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
@@ -10,7 +11,8 @@ import org.springframework.stereotype.Component;
 public class JwtProperties {
 
     /** Secret key - must be at least 256 bits (32 chars) */
-    private String secretKey = "ecard-default-secret-key-change-in-production!!";
+    @Value("${zidtech.security.jwt.secret-key}")
+    private String secretKey;
 
     /** Access token expiry in milliseconds. Default: 15 minutes */
     private long accessTokenExpiry = 15 * 60 * 1000L;
