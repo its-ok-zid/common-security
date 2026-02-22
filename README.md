@@ -69,7 +69,7 @@ This library intentionally **does NOT**:
 - Persist refresh tokens
 - Enforce business-specific authorization rules
 
-These responsibilities belong to **individual microservices**.
+These responsibilities belongs to **individual microservices**.
 
 ---
 
@@ -81,5 +81,5 @@ These responsibilities belong to **individual microservices**.
 <dependency>
   <groupId>com.zidtech.security</groupId>
   <artifactId>common-security</artifactId>
-  <version>1.0.5</version>
+  <version>${LATEST_VERSION}</version>
 </dependency>
