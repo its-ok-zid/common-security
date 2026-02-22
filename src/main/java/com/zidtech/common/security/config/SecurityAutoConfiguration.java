@@ -17,18 +17,18 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @AutoConfiguration
 @EnableScheduling
 @ComponentScan("com.ecard.security")
-@EnableConfigurationProperties(com.ecard.security.config.JwtProperties.class)
+@EnableConfigurationProperties(JwtProperties.class)
 public class SecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    public JwtUtil jwtUtil(com.ecard.security.config.JwtProperties jwtProperties) {
+    public JwtUtil jwtUtil(JwtProperties jwtProperties) {
         return new JwtUtil(jwtProperties);
     }
 
     @Bean
     @ConditionalOnMissingBean
-    public CookieUtil cookieUtil(com.ecard.security.config.JwtProperties jwtProperties) {
+    public CookieUtil cookieUtil(JwtProperties jwtProperties) {
         return new CookieUtil(jwtProperties);
     }
 
@@ -50,7 +50,7 @@ public class SecurityAutoConfiguration {
     @ConditionalOnMissingBean
     public RefreshTokenService refreshTokenService(RefreshTokenRepository refreshTokenRepository,
                                                    UserRepository userRepository,
-                                                   com.ecard.security.config.JwtProperties jwtProperties) {
+                                                   JwtProperties jwtProperties) {
         return new RefreshTokenService(refreshTokenRepository, userRepository, jwtProperties);
     }
 }

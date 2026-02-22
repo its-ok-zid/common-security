@@ -1,6 +1,7 @@
 package com.zidtech.common.security.util;
 
-import com.ecard.security.config.JwtProperties;
+
+import com.zidtech.common.security.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;

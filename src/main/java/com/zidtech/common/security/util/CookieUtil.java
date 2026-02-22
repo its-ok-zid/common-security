@@ -1,6 +1,6 @@
 package com.zidtech.common.security.util;
 
-import com.ecard.security.config.JwtProperties;
+import com.zidtech.common.security.config.JwtProperties;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

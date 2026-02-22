@@ -1,5 +1,6 @@
 package com.zidtech.common.security.service;
 
+import com.zidtech.common.security.config.JwtProperties;
 import com.zidtech.common.security.exception.AuthException;
 import com.zidtech.common.security.model.RefreshToken;
 import com.zidtech.common.security.model.User;
@@ -21,7 +22,7 @@ public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserRepository userRepository;
-    private final com.ecard.security.config.JwtProperties jwtProperties;
+    private final JwtProperties jwtProperties;
 
     @Transactional
     public RefreshToken createRefreshToken(String username){
